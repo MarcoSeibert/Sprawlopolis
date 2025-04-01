@@ -32,10 +32,33 @@ class ControllerStart:
     def click_base(self, base_id):
         list_of_base_games = self.model.toggle_base(base_id)
         if not list_of_base_games:
-            # Print warning and disable button
+            # Print warning and disable button and expansions
             self.view.label_note["text"] = "At least one base"
             self.view.button_play["state"] = tk.DISABLED
             self.view.button_play.unbind(left_mouse_button)
+            list_expansions = self.model.list_expansions
+            frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
+            frames_switch.reverse()
+            for exp_id, switch in self.map_index_to_exp.items():
+                if exp_id in list_expansions:
+                    animate(0, switch, frames_switch, 6.5, 30)
+                    switch.active = False
+            self.view.label_exp1["text"] = ""
+            self.view.label_exp2["text"] = ""
+            self.view.label_exp3["text"] = ""
+            self.view.label_exp4["text"] = ""
+            self.view.label_exp5["text"] = ""
+            self.view.switch_exp1["state"] = tk.DISABLED
+            self.view.switch_exp2["state"] = tk.DISABLED
+            self.view.switch_exp3["state"] = tk.DISABLED
+            self.view.switch_exp4["state"] = tk.DISABLED
+            self.view.switch_exp5["state"] = tk.DISABLED
+            self.view.switch_exp1.unbind(left_mouse_button)
+            self.view.switch_exp2.unbind(left_mouse_button)
+            self.view.switch_exp3.unbind(left_mouse_button)
+            self.view.switch_exp4.unbind(left_mouse_button)
+            self.view.switch_exp5.unbind(left_mouse_button)
+            self.model.list_expansions = []
         elif len(list_of_base_games) > 1:
             match sorted(list_of_base_games):
                 case [0, 1]:
@@ -48,25 +71,80 @@ class ControllerStart:
                     self.view.label_note["text"] = "Using Ultimopolis"
             self.view.button_play["state"] = tk.NORMAL
             self.view.button_play.bind(left_mouse_button, partial(self.view.on_button_click))
-            # TODO Disable expansions
-            print("No expansions with multiple base games")
+            # Disable expansions when using multiple base games
+            list_expansions = self.model.list_expansions
+            frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
+            frames_switch.reverse()
+            for exp_id, switch in self.map_index_to_exp.items():
+                if exp_id in list_expansions:
+                    animate(0, switch, frames_switch, 6.5, 30)
+                    switch.active = False
+            self.view.label_exp1["text"] = ""
+            self.view.label_exp2["text"] = ""
+            self.view.label_exp3["text"] = ""
+            self.view.label_exp4["text"] = ""
+            self.view.label_exp5["text"] = ""
+            self.view.switch_exp1["state"] = tk.DISABLED
+            self.view.switch_exp2["state"] = tk.DISABLED
+            self.view.switch_exp3["state"] = tk.DISABLED
+            self.view.switch_exp4["state"] = tk.DISABLED
+            self.view.switch_exp5["state"] = tk.DISABLED
+            self.view.switch_exp1.unbind(left_mouse_button)
+            self.view.switch_exp2.unbind(left_mouse_button)
+            self.view.switch_exp3.unbind(left_mouse_button)
+            self.view.switch_exp4.unbind(left_mouse_button)
+            self.view.switch_exp5.unbind(left_mouse_button)
+            self.model.list_expansions = []
         else:
             self.view.label_note["text"] = ""
             self.view.button_play["state"] = tk.NORMAL
+            self.view.switch_exp1["state"] = tk.NORMAL
+            self.view.switch_exp2["state"] = tk.NORMAL
+            self.view.switch_exp3["state"] = tk.NORMAL
+            self.view.switch_exp1.bind(left_mouse_button, partial(self.view.on_click_exp, 1))
+            self.view.switch_exp2.bind(left_mouse_button, partial(self.view.on_click_exp, 2))
+            self.view.switch_exp3.bind(left_mouse_button, partial(self.view.on_click_exp, 3))
             self.view.button_play.bind(left_mouse_button, partial(self.view.on_button_click))
-            # TODO Update the names and amount of expansions
-            print("Updating expansions...")
+            self.view.label_exp2["text"] = "Points of Interest"
+            match self.model.list_base_games[0]:
+                case 0:
+                    self.view.label_exp1["text"] = "Wrecktar"
+                    self.view.label_exp3["text"] = "Construction Zones"
+                    self.view.label_exp4["text"] = "Beaches"
+                    self.view.label_exp5["text"] = "Roadwork"
+                    self.view.switch_exp4.bind(left_mouse_button, partial(self.view.on_click_exp, 4))
+                    self.view.switch_exp5.bind(left_mouse_button, partial(self.view.on_click_exp, 5))
+                    self.view.switch_exp4["state"] = tk.NORMAL
+                    self.view.switch_exp5["state"] = tk.NORMAL
+                case 1:
+                    self.view.label_exp1["text"] = "Invasion"
+                    self.view.label_exp3["text"] = "Seasons"
+                    self.view.label_exp4["text"] = "Harvest"
+                    self.view.label_exp5["text"] = ""
+                    self.view.switch_exp4.bind(left_mouse_button, partial(self.view.on_click_exp, 4))
+                    self.view.switch_exp5.unbind(left_mouse_button)
+                    self.view.switch_exp4["state"] = tk.NORMAL
+                    self.view.switch_exp5["state"] = tk.DISABLED
+                case 2:
+                    self.view.label_exp1["text"] = "Nessie"
+                    self.view.label_exp3["text"] = "Elevation"
+                    self.view.label_exp4["text"] = ""
+                    self.view.label_exp5["text"] = ""
+                    self.view.switch_exp4.unbind(left_mouse_button)
+                    self.view.switch_exp5.unbind(left_mouse_button)
+                    self.view.switch_exp4["state"] = tk.DISABLED
+                    self.view.switch_exp5["state"] = tk.DISABLED
 
         # Update base game toggles
         frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
         for base_id, switch in self.map_index_to_base.items():
             if base_id in list_of_base_games and not switch.active:
                 animate(0, switch, frames_switch, 6.5, 30)
-                switch.active = not switch.active
+                switch.active = True
             elif base_id not in list_of_base_games and switch.active:
                 frames_switch.reverse()
                 animate(0, switch, frames_switch, 6.5, 30)
-                switch.active = not switch.active
+                switch.active = False
 
     def click_exp(self, exp_id):
         list_expansions = self.model.toggle_exp(exp_id)
@@ -79,11 +157,11 @@ class ControllerStart:
         for exp_id, switch in self.map_index_to_exp.items():
             if exp_id in list_expansions and not switch.active:
                 animate(0, switch, frames_switch, 6.5, 30)
-                switch.active = not switch.active
+                switch.active = True
             elif exp_id not in list_expansions and switch.active:
                 frames_switch.reverse()
                 animate(0, switch, frames_switch, 6.5, 30)
-                switch.active = not switch.active
+                switch.active = False
 
     def click_diff(self, event):
         scale = event.widget

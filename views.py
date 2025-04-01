@@ -51,7 +51,7 @@ class ViewStart(ttk.Frame):
         # set up expansion choices
         ttk.Label(self, text="Expansions", font=bold_font).grid(column=2, row=2, columnspan=2, pady=(25, 10))
 
-        self.label_exp1 = ttk.Label(self, text="Wrecktar", font=basic_font)
+        self.label_exp1 = ttk.Label(self, text="Wrecktar", font=basic_font, width=18, anchor="e")
         self.label_exp1.grid(column=2, row=3, sticky="E", pady=10, padx=25)
         self.switch_exp1 = MyLabel(self, image=self.switch_off)
         self.switch_exp1.bind(left_mouse_button, partial(self.on_click_exp, 1))
