@@ -2,16 +2,17 @@ import tkinter as tk
 from functools import partial
 from math import sqrt, pi, exp
 
+
 path_to_switch = "Resources/ToggleSwitch.gif"
 path_to_scale = "Resources/Difficulty.gif"
 left_mouse_button = "<Button-1>"
 
 
-def smooth(x, m, a):
+def smooth(x: int, m: float, a: float) -> int:
     return int(a - (1 / (sqrt(2 * pi) * 3) * exp(-((x - m) ** 2) / (2 * 3 ** 2)) * 75 + 18))
 
 
-def animate(i, widget, frames, m, a):
+def animate(i: int, widget: tk.Label, frames: list[tk.PhotoImage], m: float, a: float):
     frame = frames[i]
     i += 1
     widget.configure(image=frame)
@@ -29,7 +30,7 @@ class ControllerStart:
         self.map_index_to_exp = {1: self.view.switch_exp1, 2: self.view.switch_exp2, 3: self.view.switch_exp3,
                                  4: self.view.switch_exp4, 5: self.view.switch_exp5}
 
-    def click_base(self, base_id):
+    def click_base(self, base_id:int):
         list_of_base_games = self.model.toggle_base(base_id)
         if not list_of_base_games:
             # Print warning and disable button and expansions
@@ -70,7 +71,7 @@ class ControllerStart:
                 case [0, 1, 2]:
                     self.view.label_note["text"] = "Using Ultimopolis"
             self.view.button_play["state"] = tk.NORMAL
-            self.view.button_play.bind(left_mouse_button, partial(self.view.on_button_click))
+            self.view.button_play.bind(left_mouse_button, partial(self.view.on_play))
             # Disable expansions when using multiple base games
             list_expansions = self.model.list_expansions
             frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
@@ -104,7 +105,7 @@ class ControllerStart:
             self.view.switch_exp1.bind(left_mouse_button, partial(self.view.on_click_exp, 1))
             self.view.switch_exp2.bind(left_mouse_button, partial(self.view.on_click_exp, 2))
             self.view.switch_exp3.bind(left_mouse_button, partial(self.view.on_click_exp, 3))
-            self.view.button_play.bind(left_mouse_button, partial(self.view.on_button_click))
+            self.view.button_play.bind(left_mouse_button, partial(self.view.on_play))
             self.view.label_exp2["text"] = "Points of Interest"
             match self.model.list_base_games[0]:
                 case 0:
@@ -146,12 +147,11 @@ class ControllerStart:
                 animate(0, switch, frames_switch, 6.5, 30)
                 switch.active = False
 
-    def click_exp(self, exp_id):
+    def click_exp(self, exp_id:int):
         list_expansions = self.model.toggle_exp(exp_id)
         if len(list_expansions) > 1:
+            self.view.label_note["text"] = "Better only one exp"
             # TODO Print warning on screen
-            print("Better use only one expansion")
-
         # Update the expansion toggles
         frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
         for exp_id, switch in self.map_index_to_exp.items():
@@ -163,7 +163,7 @@ class ControllerStart:
                 animate(0, switch, frames_switch, 6.5, 30)
                 switch.active = False
 
-    def click_diff(self, event):
+    def click_diff(self, event:tk.Event):
         scale = event.widget
         y_click = event.y
         frames_scale = []
@@ -184,3 +184,11 @@ class ControllerStart:
                 frames_scale = [tk.PhotoImage(file=path_to_scale, format=f"gif -index {i}") for i in range(1, 8)]
         animate(0, scale, frames_scale, 4, 37)
         self.model.difficulty = scale.value
+
+    def click_play(self):
+        self.view.master.start_game(self.model.list_base_games, self.model.list_expansions, self.model.difficulty)
+
+class ControllerMain:
+    def __init__(self, model, view):
+        self.model = model
+        self.view = view

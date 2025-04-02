@@ -6,7 +6,7 @@ from lib import MyLabel
 
 
 class ViewStart(ttk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent:tk.Tk):
         super().__init__(parent)
         self.controller = None
 
@@ -94,24 +94,28 @@ class ViewStart(ttk.Frame):
         my_button_style = "MyButton.TButton"
         style_buttons.configure(my_button_style, font=basic_font)
         self.button_play = ttk.Button(self, text="Play!", style=my_button_style)
-        self.button_play.bind(left_mouse_button, partial(self.on_button_click))
+        self.button_play.bind(left_mouse_button, partial(self.on_play))
         self.button_play.grid(column=0, row=6, columnspan=2)
         self.label_note = ttk.Label(self, text="", font=basic_font, relief="sunken", width=18, anchor=tk.CENTER,
                                     background="WHITE")
         self.label_note.grid(column=0, row=7, columnspan=2)
-        ttk.Button(self, text="Quit!", style=my_button_style).grid(column=0, row=8, columnspan=2)
+        ttk.Button(self, text="Quit!", style=my_button_style, command=self.on_quit).grid(column=0, row=8, columnspan=2)
 
     def set_controller(self, controller):
         self.controller = controller
 
-    def on_button_click(self, *args):
-        print("Go")
+    def on_quit(self):
+        self.master.destroy()
 
-    def on_click_base(self, base_id, *args):
+    def on_play(self, *args):
+        if self.controller:
+            self.controller.click_play()
+
+    def on_click_base(self, base_id:int, *args):
         if self.controller:
             self.controller.click_base(base_id)
 
-    def on_click_exp(self, exp_id, *args):
+    def on_click_exp(self, exp_id:int, *args):
         if self.controller:
             self.controller.click_exp(exp_id)
 
@@ -123,3 +127,12 @@ class ViewStart(ttk.Frame):
                 event = arg
         if self.controller:
             self.controller.click_diff(event)
+
+
+class ViewMain(ttk.Frame):
+    def __init__(self, parent:tk.Tk):
+        super().__init__(parent)
+        self.controller = None
+
+    def set_controller(self, controller):
+        self.controller = controller
