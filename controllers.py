@@ -1,7 +1,12 @@
 import tkinter as tk
+from tkinter import ttk
 from functools import partial
 from math import sqrt, pi, exp
 
+trebuchet_ms = "Trebuchet MS"
+title_font = (trebuchet_ms, 35, "bold")
+basic_font = (trebuchet_ms, 20)
+bold_font = (trebuchet_ms, 20, "bold")
 
 path_to_switch = "Resources/ToggleSwitch.gif"
 path_to_scale = "Resources/Difficulty.gif"
@@ -30,7 +35,7 @@ class ControllerStart:
         self.map_index_to_exp = {1: self.view.switch_exp1, 2: self.view.switch_exp2, 3: self.view.switch_exp3,
                                  4: self.view.switch_exp4, 5: self.view.switch_exp5}
 
-    def click_base(self, base_id:int):
+    def click_base(self, base_id: int):
         list_of_base_games = self.model.toggle_base(base_id)
         if not list_of_base_games:
             # Print warning and disable button and expansions
@@ -147,7 +152,7 @@ class ControllerStart:
                 animate(0, switch, frames_switch, 6.5, 30)
                 switch.active = False
 
-    def click_exp(self, exp_id:int):
+    def click_exp(self, exp_id: int):
         list_expansions = self.model.toggle_exp(exp_id)
         if len(list_expansions) > 1:
             self.view.label_note["text"] = "Better only one exp"
@@ -163,7 +168,7 @@ class ControllerStart:
                 animate(0, switch, frames_switch, 6.5, 30)
                 switch.active = False
 
-    def click_diff(self, event:tk.Event):
+    def click_diff(self, event: tk.Event):
         scale = event.widget
         y_click = event.y
         frames_scale = []
@@ -188,7 +193,64 @@ class ControllerStart:
     def click_play(self):
         self.view.master.start_game(self.model.list_base_games, self.model.list_expansions, self.model.difficulty)
 
+
 class ControllerMain:
     def __init__(self, model, view):
         self.model = model
         self.view = view
+        self.starting_drag_position = (0, 0)
+        self.drag_data = {"x": 0, "y": 0, "item": 0}
+
+        for i, scoring_card in enumerate(self.model.score_cards):
+            self.temp = ttk.Label(self.view, text=scoring_card, font=bold_font)
+            self.temp.grid(column=7, row=i+1, columnspan=2)
+
+        # add bindings to drag canvas
+        self.view.play_area.bind("<ButtonPress-2>", self.pick_up_canvas)
+        self.view.play_area.bind("<ButtonRelease-2>", self.drop_canvas)
+        self.view.play_area.bind("<B2-Motion>", self.drag_canvas)
+
+        # add bindings to drag cards
+        self.view.play_area.tag_bind("movable", "<ButtonPress-1>", self.pick_up_card)
+        self.view.play_area.tag_bind("movable", "<ButtonRelease-1>", self.drop_card)
+        self.view.play_area.tag_bind("movable", "<B1-Motion>", self.drag_card)
+
+    def pick_up_canvas(self, event):
+        self.view.play_area.config(xscrollincrement=3)
+        self.view.play_area.config(yscrollincrement=3)
+        self.drag_data["x"], self.drag_data["y"] = (event.x, event.y)
+
+    def drop_canvas(self, event):
+        self.view.play_area.config(xscrollincrement=0)
+        self.view.play_area.config(yscrollincrement=0)
+        self.drag_data["x"], self.drag_data["y"] = (0, 0)
+
+    def drag_canvas(self, event):
+        delta_x = event.x - self.drag_data["x"]
+        delta_y = event.y - self.drag_data["y"]
+        self.view.play_area.xview("scroll", delta_x, "units")
+        self.view.play_area.yview("scroll", delta_y, "units")
+        self.drag_data["x"], self.drag_data["y"] = (event.x, event.y)
+
+    def pick_up_card(self, event):
+        self.drag_data["item"] = self.view.play_area.find_closest(event.x, event.y)[0]
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
+
+    def drop_card(self, event):
+        grid_x_pix = self.view.play_area.canvasx(event.x, 100)
+        grid_y_pix = self.view.play_area.canvasy(event.y, 73.5)
+        self.view.play_area.coords(self.drag_data["item"], grid_x_pix, grid_y_pix)
+        # grid_x_int = grid_x_pix // 100
+        # grid_y_int = grid_y_pix // 73.5
+        # self.play_area.itemconfig(self.drag_data["item"], tag="static")
+        self.drag_data["item"] = 0
+        self.drag_data["x"] = 0
+        self.drag_data["y"] = 0
+
+    def drag_card(self, event):
+        delta_x = event.x - self.drag_data["x"]
+        delta_y = event.y - self.drag_data["y"]
+        self.view.play_area.move(self.drag_data["item"], delta_x, delta_y)
+        self.drag_data["x"] = event.x
+        self.drag_data["y"] = event.y
