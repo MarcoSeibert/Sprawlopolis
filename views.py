@@ -176,6 +176,7 @@ def get_first_picture():
     image = add_corners_and_border(first_image, card_size)
     return image
 
+
 class ViewMain(ttk.Frame):
     def __init__(self, parent: tk.Tk):
         super().__init__(parent)
@@ -190,18 +191,18 @@ class ViewMain(ttk.Frame):
 
         # self.grid_columnconfigure(5, minsize=75)
         # self.grid_columnconfigure(6, minsize=75)
-        self.grid_columnconfigure((9, 10), minsize=75)
+        self.grid_columnconfigure((12, 13), minsize=75)
 
         # insert title
-        ttk.Label(self, text="Sprawlopolis digital", font=title_font).grid(column=0, row=0, columnspan=10)
+        ttk.Label(self, text="Sprawlopolis digital", font=title_font).grid(column=0, row=0, columnspan=14)
 
         # insert play area
         self.play_area = tk.Canvas(self, width=1500, height=700, background="white", scrollregion=(0, 0, 3000, 3000))
-        self.play_area.grid(column=1, row=1, columnspan=6, rowspan=6)
+        self.play_area.grid(column=1, row=1, columnspan=9, rowspan=6)
         ## add scrollbars
         self.hbar = ttk.Scrollbar(self, orient=HORIZONTAL)
         self.hbar.config(command=self.play_area.xview)
-        self.hbar.grid(column=1, row=7, columnspan=6, sticky="we")
+        self.hbar.grid(column=1, row=7, columnspan=9, sticky="we")
         self.vbar = ttk.Scrollbar(self, orient=VERTICAL)
         self.vbar.config(command=self.play_area.yview)
         self.vbar.grid(column=0, row=1, rowspan=6, sticky="ns")
@@ -212,14 +213,14 @@ class ViewMain(ttk.Frame):
 
         # insert goals
         self.first_score_card = ttk.Label(self, image=self.first_image)
-        self.first_score_card.grid(column=7, row=1, columnspan=2)
-        ttk.Label(self, text="0", font=bold_font).grid(column=9, row=1, columnspan=2)
+        self.first_score_card.grid(column=10, row=1, columnspan=2)
+        ttk.Label(self, text="0", font=bold_font).grid(column=12, row=1, columnspan=2)
         self.second_score_card = ttk.Label(self, image=self.first_image)
-        self.second_score_card.grid(column=7, row=2, columnspan=2)
-        ttk.Label(self, text="0", font=bold_font).grid(column=9, row=2, columnspan=2)
+        self.second_score_card.grid(column=10, row=2, columnspan=2)
+        ttk.Label(self, text="0", font=bold_font).grid(column=12, row=2, columnspan=2)
         self.third_score_card = ttk.Label(self, image=self.first_image)
-        self.third_score_card.grid(column=7, row=3, columnspan=2)
-        ttk.Label(self, text="0", font=bold_font).grid(column=9, row=3, columnspan=2)
+        self.third_score_card.grid(column=10, row=3, columnspan=2)
+        ttk.Label(self, text="0", font=bold_font).grid(column=12, row=3, columnspan=2)
 
         # insert scorecard
         ## load images
@@ -230,49 +231,58 @@ class ViewMain(ttk.Frame):
         self.streets = add_corners_and_border(Image.open("Resources/Street.png"), (50, 50))
         ## add cells
         ### for blocks
-        ttk.Label(self, image=self.orange_block).grid(column=7, row=4, sticky="e")
+        ttk.Label(self, image=self.orange_block).grid(column=10, row=4, sticky="e")
         self.orange_score = ttk.Label(self, text="0", font=bold_font)
-        self.orange_score.grid(column=8, row=4)
-        ttk.Label(self, image=self.blue_block).grid(column=7, row=5, sticky="e")
+        self.orange_score.grid(column=11, row=4)
+        ttk.Label(self, image=self.blue_block).grid(column=10, row=5, sticky="e")
         self.blue_score = ttk.Label(self, text="0", font=bold_font)
-        self.blue_score.grid(column=8, row=5)
-        ttk.Label(self, image=self.gray_block).grid(column=9, row=4, sticky="e")
+        self.blue_score.grid(column=11, row=5)
+        ttk.Label(self, image=self.gray_block).grid(column=12, row=4, sticky="e")
         self.gray_score = ttk.Label(self, text="0", font=bold_font)
-        self.gray_score.grid(column=10, row=4)
-        ttk.Label(self, image=self.green_block).grid(column=9, row=5, sticky="e")
+        self.gray_score.grid(column=13, row=4)
+        ttk.Label(self, image=self.green_block).grid(column=12, row=5, sticky="e")
         self.green_score = ttk.Label(self, text="0", font=bold_font)
-        self.green_score.grid(column=10, row=5)
+        self.green_score.grid(column=13, row=5)
         ### for streets
-        ttk.Label(self, image=self.streets).grid(column=7, row=6, sticky="e")
+        ttk.Label(self, image=self.streets).grid(column=10, row=6, sticky="e")
         self.street_score = ttk.Label(self, text="0", font=bold_font)
-        self.street_score.grid(column=8, row=6)
+        self.street_score.grid(column=11, row=6)
         ### for goal
-        ttk.Label(self, text="Goal Score:", font=bold_font).grid(column=7, row=8, columnspan=2)
+        ttk.Label(self, text="Goal Score:", font=bold_font).grid(column=10, row=8, columnspan=2)
         self.goal_score = ttk.Label(self, text="0", font=bold_font)
-        self.goal_score.grid(column=9, row=8, sticky="w")
+        self.goal_score.grid(column=12, row=8, sticky="w")
         ### for total
-        ttk.Label(self, text="Total Score:", font=bold_font).grid(column=7, row=9, columnspan=2)
+        ttk.Label(self, text="Total Score:", font=bold_font).grid(column=10, row=9, columnspan=2)
         self.total_score = ttk.Label(self, text="0", font=bold_font)
-        self.total_score.grid(column=9, row=9, sticky="w")
+        self.total_score.grid(column=12, row=9, sticky="w")
 
         # insert hand
-        self.test = Image.open("Resources/Dark_wood.png").crop((0,0,600,167))
-        self.test = ImageTk.PhotoImage(self.test)
-        ttk.Label(self, image=self.test).grid(column=4, row=8, columnspan=3, rowspan=2)
         self.first_card = ttk.Label(self, image=self.first_image)
         self.first_card.grid(column=1, row=8, rowspan=2)
         self.second_card = ttk.Label(self, image=self.first_image)
         self.second_card.grid(column=2, row=8, rowspan=2)
         self.third_card = ttk.Label(self, image=self.first_image)
         self.third_card.grid(column=3, row=8, rowspan=2)
-        self.next_card = ttk.Label(self, image=self.first_image)
-        self.next_card.grid(column=4, row=8, rowspan=2)
-        self.next_card = ttk.Label(self, image=self.first_image)
-        self.next_card.grid(column=5, row=8, rowspan=2)
-        self.next_card = ttk.Label(self, image=self.first_image)
-        self.next_card.grid(column=6, row=8, rowspan=2)
 
+        n = 3
+        match n:
+            case 1:
+                self.next_card = ttk.Label(self, image=self.first_image)
+                self.next_card.grid(column=4, row=8, rowspan=2, columnspan=6)
 
+            case 2:
+                self.next_card = ttk.Label(self, image=self.first_image)
+                self.next_card.grid(column=4, row=8, rowspan=2, columnspan=3)
+                self.next_card = ttk.Label(self, image=self.first_image)
+                self.next_card.grid(column=7, row=8, rowspan=2, columnspan=3)
+
+            case 3:
+                self.next_card = ttk.Label(self, image=self.first_image)
+                self.next_card.grid(column=4, row=8, rowspan=2, columnspan=2)
+                self.next_card = ttk.Label(self, image=self.first_image)
+                self.next_card.grid(column=6, row=8, rowspan=2, columnspan=2)
+                self.next_card = ttk.Label(self, image=self.first_image)
+                self.next_card.grid(column=8, row=8, rowspan=2, columnspan=2)
 
     def set_controller(self, controller):
         self.controller = controller

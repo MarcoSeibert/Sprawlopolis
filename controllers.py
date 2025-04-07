@@ -204,7 +204,7 @@ class ControllerMain:
 
         for i, scoring_card in enumerate(self.model.score_cards):
             self.temp = ttk.Label(self.view, text=scoring_card, font=bold_font)
-            self.temp.grid(column=9, row=i+1, columnspan=2)
+            self.temp.grid(column=12, row=i+1, columnspan=2)
 
         # add bindings to drag canvas
         self.view.play_area.bind("<ButtonPress-2>", self.pick_up_canvas)
