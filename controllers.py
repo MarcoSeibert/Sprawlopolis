@@ -200,10 +200,11 @@ class ControllerMain:
         self.view = view
         self.starting_drag_position = (0, 0)
         self.drag_data = {"x": 0, "y": 0, "item": 0}
+        self.view.master.bind("<Escape>", self.quit)
 
         for i, scoring_card in enumerate(self.model.score_cards):
             self.temp = ttk.Label(self.view, text=scoring_card, font=bold_font)
-            self.temp.grid(column=7, row=i+1, columnspan=2)
+            self.temp.grid(column=9, row=i+1, columnspan=2)
 
         # add bindings to drag canvas
         self.view.play_area.bind("<ButtonPress-2>", self.pick_up_canvas)
@@ -254,3 +255,7 @@ class ControllerMain:
         self.view.play_area.move(self.drag_data["item"], delta_x, delta_y)
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
+
+    def quit(self, _):
+        # TODO ask if intentional (Are you sure?)
+        self.view.master.destroy()
