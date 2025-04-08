@@ -5,7 +5,7 @@ import tkinter as tk
 
 
 class App(tk.Tk):
-    def __init__(self, factor_x: float, factor_y: float):
+    def __init__(self, factor_x: float, factor_y: float, offset_factor_y=1):
         super().__init__()
 
         # get some measurements
@@ -14,7 +14,7 @@ class App(tk.Tk):
         self.window_width = int(screen_width / factor_x)
         self.window_height = int(screen_height / factor_y)
         self.offset_x = (screen_width - self.window_width) // 2
-        self.offset_y = (screen_height - self.window_height) // 2
+        self.offset_y = offset_factor_y * (screen_height - self.window_height) // 2
 
         # set up basic parameters
         self.title("Sprawlopolis")
@@ -47,8 +47,8 @@ class StartApp(App):
 
 class MainApp(App):
     def __init__(self, list_base_games, list_expansions, difficulty):
-        super().__init__(1, 1)
-        self.attributes("-fullscreen", 1)
+        super().__init__(1, 10 / 9, 0)
+
         # set up model
         model_main = ModelMain(list_base_games, list_expansions, difficulty)
 
