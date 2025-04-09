@@ -5,6 +5,13 @@ from pypdf import PdfReader
 
 from globals import BASE_GAME_MAP, CARD_SIZE, CARD_MAPS
 
+try:
+    from pnp_data import ScoringFunctions
+except ModuleNotFoundError as e:
+    print(e)
+    print("Using dummy functions instead")
+    from globals import ScoringFunctions
+
 
 class ModelStart:
     def __init__(self):
@@ -44,31 +51,13 @@ def add_corners_and_border(first_image, card_size):
     return ImageTk.PhotoImage(result)
 
 
-#
-#
-# def get_first_picture():
-#    card_size = (200, 147)
-#    fp = "Resources/PnPs/Sprawlopolis_base.pdf"
-#    try:
-#        reader = PdfReader(fp)
-#        page = reader.pages[1]
-#        first_image = None
-#        for count, image_file_object in enumerate(page.images):
-#            image = image_file_object.image
-#            first_image = image.rotate(90, expand=True)
-#            break
-#    except FileNotFoundError:
-#        first_image = Image.open("Resources/Fallback.jpg")
-
-# image = add_corners_and_border(first_image, card_size)
-# return image
-
 class Deck:
-    def __init__(self, base_game, _):
+    def __init__(self, game, _):
         card_size = (200, 147)
         self.cards = []
         self.card_ids = []
-        game = BASE_GAME_MAP[base_game]
+        self.scoring_functions = ScoringFunctions()
+        # load card images and scoring functions
         try:
             file_name = f"{game}_base.pdf"
             fp = f"Resources/PnPs/{file_name}"
@@ -79,32 +68,49 @@ class Deck:
                     image_rotated = image_raw.rotate(-90, expand=True)
                     image = add_corners_and_border(image_rotated, CARD_SIZE)
                     index = i * 6 + j + 1
-                    card_id = CARD_MAPS[game][index]["card_id"]
-                    side = CARD_MAPS[game][index]["side"]
+                    card_nr = CARD_MAPS["Sprawlopolis"][index]["card_id"]
+                    side = CARD_MAPS["Sprawlopolis"][index]["side"]
+                    card_id = f"{game}_{card_nr}"
                     if card_id in self.card_ids:
                         existing_card = next(card for card in self.cards if card.card_id == card_id)
                         existing_card.add_image(side, image)
                     else:
-                        card = Card(image, card_id, side)
+                        scoring_function = self.scoring_functions.id_to_function_map["Sprawlopolis"][card_nr]
+                        card = Card(card_nr, game, side, image, scoring_function, None)
                         self.card_ids.append(card_id)
                         self.cards.append(card)
-        except FileNotFoundError as e:
-            print(e)
+        except FileNotFoundError as ex:
+            print(ex)
             print("Using default image instead")
             fp = "Resources/Fallback.jpg"
             image_raw = Image.open(fp)
             image = add_corners_and_border(image_raw, card_size)
             for j in range(18):
-                card = Card(image, j, "front")
+                scoring_function = self.scoring_functions.id_to_function_map[game][j]
+                card = Card(j, "None", "front", image, scoring_function, None)
                 card.add_image("back", image)
                 self.cards.append(card)
 
+        self.shuffle()
+
+    def shuffle(self):
+        random.shuffle(self.cards)
+
+    def deal(self):
+        return self.cards.pop(0)
+
+
 class Card:
-    def __init__(self, image, card_id, side):
+    def __init__(self, card_nr, base_game, side, image, scoring_function, blocks):
+        self.card_id = f"{base_game}_{card_nr}"
+        self.points = card_nr
+        self.base_game = base_game
         self.front_image = None
         self.back_image = None
+        self.scoring_function = scoring_function
+        self.blocks = blocks
+
         self.add_image(side, image)
-        self.card_id = card_id
 
     def add_image(self, side, image):
         if side == "front":
@@ -118,10 +124,48 @@ class ModelMain:
         self.list_base_games = list_base_games
         self.list_expansions = list_expansions
         self.difficulty = difficulty
-        self.list_of_decks = []
-        for game in self.list_base_games:
-            deck = Deck(game, self.list_expansions)
-            self.list_of_decks.append(deck)
+        self.dict_of_decks = {}
         self.score_cards = []
-        for i in range(3):
-            self.score_cards.append(i)
+        self.hand_cards = []
+
+        for game_id in self.list_base_games:
+            game_name = BASE_GAME_MAP[game_id]
+            deck = Deck(game_name, self.list_expansions)
+            self.dict_of_decks[game_name] = deck
+
+        # draw three (or four) scoring cards
+        if len(self.list_base_games) == 1:
+            game = list(self.dict_of_decks.keys())[0]
+            for _ in range(3):
+                self.score_cards.append(self.dict_of_decks[game].deal())
+        else:
+            match sorted(self.list_base_games):
+                case [0, 1]:
+                    # todo take goal cards from all three decks (2*base + combo)
+                    game = list(self.dict_of_decks.keys())[0]
+                    for _ in range(3):
+                        self.score_cards.append(self.dict_of_decks[game].deal())
+                    print("Using Combopolis I")
+                case [0, 2]:
+                    print("Using Combopolis II")
+                case [1, 2]:
+                    print("Using Combopolis III")
+                case [0, 1, 2]:
+                    # todo take goal cards from all four decks (3*base + ultimo)
+                    game = list(self.dict_of_decks.keys())[0]
+                    for _ in range(4):
+                        self.score_cards.append(self.dict_of_decks[game].deal())
+                    print("Using Ultimopolis = 4 cards")
+
+        # draw three (or two) initial hand cards
+        # todo make case for 3 with all three decks
+        if len(self.list_base_games) == 1 or len(self.list_base_games) == 3:
+            game = list(self.dict_of_decks.keys())[0]
+            for _ in range(3):
+                self.hand_cards.append(self.dict_of_decks[game].deal())
+        #todo make case for 2 from both decks
+        else:
+            game = list(self.dict_of_decks.keys())[0]
+            for _ in range(2):
+                self.hand_cards.append(self.dict_of_decks[game].deal())
+

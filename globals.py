@@ -44,4 +44,39 @@ SPRAWLOPOLIS_BASE_MAP = {1: {"card_id": 2, "side": "front"},
                          34: {"card_id": 18, "side": "back"},
                          35: {"card_id": 17, "side": "back"},
                          36: {"card_id": 16, "side": "back"}}
-CARD_MAPS = {"Sprawlopolis": SPRAWLOPOLIS_BASE_MAP}
+AGROPOLIS_BASE_MAP = {1: {"card_id": 2, "side": "front"},
+                      2: {"card_id": 1, "side": "front"},
+                      3: {"card_id": 3, "side": "front"}}
+NATUROPOLIS_BASE_MAP = {1: {"card_id": 2, "side": "front"},
+                        2: {"card_id": 1, "side": "front"},
+                        3: {"card_id": 3, "side": "front"}}
+CARD_MAPS = {"Sprawlopolis": SPRAWLOPOLIS_BASE_MAP, "Agropolis": AGROPOLIS_BASE_MAP,
+             "Naturopolis": NATUROPOLIS_BASE_MAP}
+
+
+class ScoringFunctions:
+    def __init__(self):
+        self.id_to_function_map = {"Sprawlopolis": {}, "Agropolis": {}, "Naturopolis": {}}
+        self.id_to_function_map["Sprawlopolis"][1] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][2] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][3] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][4] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][5] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][6] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][7] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][8] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][9] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][10] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][11] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][12] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][13] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][14] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][15] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][16] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][17] = lambda x: x
+        self.id_to_function_map["Sprawlopolis"][18] = lambda x: x
+
+    def get_function_by_card_id(self, card_id):
+        base_game = card_id.split("_")[0]
+        card_nr = card_id.split("_")[1]
+        return self.id_to_function_map[base_game][card_nr]

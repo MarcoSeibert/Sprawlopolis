@@ -152,7 +152,6 @@ class ControllerStart:
         list_expansions = self.model.toggle_exp(exp_id)
         if len(list_expansions) > 1:
             self.view.label_note["text"] = "Better only one exp"
-            # TODO Print warning on screen
         # Update the expansion toggles
         frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
         for exp_id, switch in self.map_index_to_exp.items():
@@ -196,10 +195,68 @@ class ControllerMain:
         self.view = view
         self.starting_drag_position = (0, 0)
         self.drag_data = {"x": 0, "y": 0, "item": 0}
+        self.view.master.bind("<Escape>", self.quit)
+        self.number_of_decks = len(self.model.list_base_games)
 
-        for i, scoring_card in enumerate(self.model.score_cards):
-            self.temp = ttk.Label(self.view, text=scoring_card, font=BOLD_FONT)
-            self.temp.grid(column=7, row=i + 1, columnspan=2)
+        # show scoring cards
+        if self.number_of_decks != 3:
+            # standard case = 3 goals
+            for i, scoring_card in enumerate(self.model.score_cards):
+                self.scoring_card = ttk.Label(self.view, image=scoring_card.back_image)
+                self.scoring_card.grid(column=13, row=4 * i + 1, columnspan=2, rowspan=4)
+                ttk.Label(self.view, text="0", font=BOLD_FONT).grid(column=15, row=4 * i + 1, columnspan=2, rowspan=4)
+        else:
+            # Ulimopolis = 4 goals
+            for i, scoring_card in enumerate(self.model.score_cards):
+                self.scoring_card = ttk.Label(self.view, image=scoring_card.back_image)
+                self.scoring_card.grid(column=13, row=3 * i + 1, columnspan=2, rowspan=3)
+                ttk.Label(self.view, text="0", font=BOLD_FONT).grid(column=15, row=3 * i + 1, columnspan=2, rowspan=3)
+
+        # show initial hand cards
+        if self.number_of_decks != 2:
+            # standard case = 3 cards
+            self.first_card = ttk.Label(self.view, image=self.model.hand_cards[0].front_image)
+            self.first_card.grid(column=1, row=17, rowspan=2, columnspan=2)
+            self.second_card = ttk.Label(self.view, image=self.model.hand_cards[1].front_image)
+            self.second_card.grid(column=3, row=17, rowspan=2, columnspan=2)
+            self.third_card = ttk.Label(self.view, image=self.model.hand_cards[2].front_image)
+            self.third_card.grid(column=5, row=17, rowspan=2, columnspan=2)
+        else:
+            # Combopolis = 2 cards
+            self.first_card = ttk.Label(self.view, image=self.model.hand_cards[0].front_image)
+            self.first_card.grid(column=1, row=17, rowspan=2, columnspan=3)
+            self.second_card = ttk.Label(self.view, image=self.model.hand_cards[1].front_image)
+            self.second_card.grid(column=4, row=17, rowspan=2, columnspan=3)
+
+        # show decks
+        match self.number_of_decks:
+            case 1:
+                game = list(self.model.dict_of_decks.keys())[0]
+                self.next_card = self.model.dict_of_decks[game].deal()
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image.grid(column=7, row=17, rowspan=2, columnspan=6)
+            case 2:
+                # todo show cards from the matching deck
+                game = list(self.model.dict_of_decks.keys())[0]
+                self.next_card = self.model.dict_of_decks[game].deal()
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image.grid(column=7, row=17, rowspan=2, columnspan=3)
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image.grid(column=10, row=17, rowspan=2, columnspan=3)
+            case 3:
+                # todo show cards from the matching deck
+                game = list(self.model.dict_of_decks.keys())[0]
+                self.next_card = self.model.dict_of_decks[game].deal()
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image.grid(column=7, row=17, rowspan=2, columnspan=2)
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image.grid(column=9, row=17, rowspan=2, columnspan=2)
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image.grid(column=11, row=17, rowspan=2, columnspan=2)
+
+        # add first card to canvas
+        self.temp_card = self.model.dict_of_decks["Sprawlopolis"].deal()
+        self.view.play_area.create_image(3000, 1400, image=self.temp_card.front_image)
 
         # add bindings to drag canvas
         self.view.play_area.bind("<ButtonPress-2>", self.pick_up_canvas)
@@ -212,8 +269,8 @@ class ControllerMain:
         self.view.play_area.tag_bind("movable", "<B1-Motion>", self.drag_card)
 
     def pick_up_canvas(self, event):
-        self.view.play_area.config(xscrollincrement=3)
-        self.view.play_area.config(yscrollincrement=3)
+        self.view.play_area.config(xscrollincrement=1)
+        self.view.play_area.config(yscrollincrement=1)
         self.drag_data["x"], self.drag_data["y"] = (event.x, event.y)
 
     def drop_canvas(self, _):
@@ -252,3 +309,8 @@ class ControllerMain:
         self.view.play_area.move(self.drag_data["item"], delta_x, delta_y)
         self.drag_data["x"] = event.x
         self.drag_data["y"] = event.y
+
+    def quit(self, _):
+        # TODO ask if intentional (Are you sure?)
+        self.view.master.destroy()
+

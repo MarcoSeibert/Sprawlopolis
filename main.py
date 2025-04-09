@@ -47,8 +47,8 @@ class StartApp(App):
 
 class MainApp(App):
     def __init__(self, list_base_games, list_expansions, difficulty):
-        super().__init__(1, 10 / 9, 0)
-
+        super().__init__(1, 1, 0)
+        self.attributes("-fullscreen", True)
         # set up model
         model_main = ModelMain(list_base_games, list_expansions, difficulty)
 
