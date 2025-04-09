@@ -119,31 +119,43 @@ class Card:
         else:
             self.back_image = image
 
+class Boardstate:
+    def __init__(self):
+        pass
+
+    def add_card_to_board(self, card):
+        print(self, card)
 
 class ModelMain:
     def __init__(self, list_base_games, list_expansions, difficulty):
+        self.boardstate = Boardstate()
         self.list_base_games = list_base_games
         self.list_expansions = list_expansions
         self.difficulty = difficulty
         self.dict_of_decks = {}
         self.score_cards = []
         self.hand_cards = []
+        self.number_of_decks = len(self.list_base_games)
 
         for game_id in self.list_base_games:
             game_name = BASE_GAME_MAP[game_id]
             deck = Deck(game_name, self.list_expansions)
             self.dict_of_decks[game_name] = deck
 
-        # draw three (or four) scoring cards
-        if len(self.list_base_games) == 1:
+        if self.number_of_decks == 1:
             game = list(self.dict_of_decks.keys())[0]
+        else:
+            # todo adjust for combo
+            game = list(self.dict_of_decks.keys())[0]
+
+        # draw three (or four) scoring cards
+        if self.number_of_decks == 1:
             for _ in range(3):
                 self.score_cards.append(self.dict_of_decks[game].deal())
         else:
             match sorted(self.list_base_games):
                 case [0, 1]:
                     # todo take goal cards from all three decks (2*base + combo)
-                    game = list(self.dict_of_decks.keys())[0]
                     for _ in range(3):
                         self.score_cards.append(self.dict_of_decks[game].deal())
                     print("Using Combopolis I")
@@ -153,19 +165,20 @@ class ModelMain:
                     print("Using Combopolis III")
                 case [0, 1, 2]:
                     # todo take goal cards from all four decks (3*base + ultimo)
-                    game = list(self.dict_of_decks.keys())[0]
                     for _ in range(4):
                         self.score_cards.append(self.dict_of_decks[game].deal())
                     print("Using Ultimopolis = 4 cards")
 
         # draw three (or two) initial hand cards
         # todo make case for 3 with all three decks
-        if len(self.list_base_games) == 1 or len(self.list_base_games) == 3:
-            game = list(self.dict_of_decks.keys())[0]
+        if self.number_of_decks == 1 or self.number_of_decks == 3:
             for _ in range(3):
                 self.hand_cards.append(self.dict_of_decks[game].deal())
         # todo make case for 2 from both decks
         else:
-            game = list(self.dict_of_decks.keys())[0]
             for _ in range(2):
                 self.hand_cards.append(self.dict_of_decks[game].deal())
+
+        # draw first card
+        if self.number_of_decks == 1:
+            self.boardstate.add_card_to_board(self.dict_of_decks[game].deal())
