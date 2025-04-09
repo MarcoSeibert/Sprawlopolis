@@ -4,3 +4,5 @@
 pnp_data.py
 
 Resources/PnPs/
+
+__pycache__/

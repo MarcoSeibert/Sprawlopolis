@@ -359,8 +359,10 @@ class ControllerMain:
         if param:
             # print(grid_x_pix, grid_y_pix)
             self.view.play_area.create_image(grid_x_pix - CARD_SIZE[0] / 2, grid_y_pix - CARD_SIZE[1] / 2,
-                                             image=self.image_approve, tag="canvas_buttons")
+                                             image=self.image_approve, tags=("canvas_buttons", "approve"))
             self.view.play_area.create_image(grid_x_pix - CARD_SIZE[0] / 2, grid_y_pix,
-                                             image=self.image_turn, tag="canvas_buttons")
+                                             image=self.image_turn, tags=("canvas_buttons", "turn"))
             self.view.play_area.create_image(grid_x_pix - CARD_SIZE[0] / 2, grid_y_pix + CARD_SIZE[1] / 2,
-                                             image=self.image_decline, tag="canvas_buttons")
+                                             image=self.image_decline, tags=("canvas_buttons", "decline"))
+        else:
+            self.view.play_area.delete("canvas_buttons")
