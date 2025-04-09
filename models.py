@@ -1,4 +1,5 @@
 import random
+from tkinter import PhotoImage
 
 from PIL import Image, ImageDraw, ImageTk
 from pypdf import PdfReader
@@ -34,19 +35,21 @@ class ModelStart:
         return self.list_expansions
 
 
-def add_corners_and_border(first_image, card_size):
-    width, height = first_image.size
+def add_corners_and_border(image_raw: Image, card_size: tuple[int, int]) -> PhotoImage:
+    image_raw.convert("RGBA")
+    image_rotated = image_raw.rotate(-90, expand=True)
+    width, height = image_rotated.size
     radius = max(card_size) // 4
     border_width = radius // 2
     mask = Image.new('L', (width, height), 0)
     draw = ImageDraw.Draw(mask)
     draw.rounded_rectangle((0, 0, width, height), radius, fill=255)
-    first_image.putalpha(mask)
+    image_rotated.putalpha(mask)
     border = Image.new("RGBA", (width + border_width * 2, height + border_width * 2), (0, 0, 0, 0))
     border_draw = ImageDraw.Draw(border)
     border_draw.rounded_rectangle((0, 0, width + border_width * 2, height + border_width * 2), radius + border_width,
                                   fill=(0, 0, 0, 255))
-    border.paste(first_image, (border_width, border_width), first_image)
+    border.paste(image_rotated, (border_width, border_width), image_rotated)
     result = border.resize(card_size)
     return ImageTk.PhotoImage(result)
 
@@ -64,9 +67,7 @@ class Deck:
             reader = PdfReader(fp)
             for i, page in enumerate(reader.pages[1:]):
                 for j, image_file_object in enumerate(page.images):
-                    image_raw = image_file_object.image
-                    image_rotated = image_raw.rotate(-90, expand=True)
-                    image = add_corners_and_border(image_rotated, CARD_SIZE)
+                    image = add_corners_and_border(image_file_object.image, CARD_SIZE)
                     index = i * 6 + j + 1
                     card_nr = CARD_MAPS["Sprawlopolis"][index]["card_id"]
                     side = CARD_MAPS["Sprawlopolis"][index]["side"]
@@ -163,9 +164,8 @@ class ModelMain:
             game = list(self.dict_of_decks.keys())[0]
             for _ in range(3):
                 self.hand_cards.append(self.dict_of_decks[game].deal())
-        #todo make case for 2 from both decks
+        # todo make case for 2 from both decks
         else:
             game = list(self.dict_of_decks.keys())[0]
             for _ in range(2):
                 self.hand_cards.append(self.dict_of_decks[game].deal())
-

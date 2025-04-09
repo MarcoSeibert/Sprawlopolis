@@ -154,24 +154,6 @@ def add_corners_and_border(first_image, card_size):
     return ImageTk.PhotoImage(result)
 
 
-def get_first_picture():
-    card_size = (200, 147)
-    fp = "Resources/PnPs/Sprawlopolis_base.pdf"
-    try:
-        reader = PdfReader(fp)
-        page = reader.pages[1]
-        first_image = None
-        for count, image_file_object in enumerate(page.images):
-            image = image_file_object.image
-            first_image = image.rotate(90, expand=True)
-            break
-    except FileNotFoundError:
-        first_image = Image.open("Resources/Fallback.jpg")
-
-    image = add_corners_and_border(first_image, card_size)
-    return image
-
-
 class ViewMain(ttk.Frame):
     def __init__(self, parent: tk.Tk):
         super().__init__(parent)
@@ -205,6 +187,10 @@ class ViewMain(ttk.Frame):
         self.vbar.config(command=self.play_area.yview)
         self.vbar.grid(column=0, row=1, rowspan=15, sticky="ns")
         self.play_area.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
+
+        # add area for decks
+        self.deck_area = ttk.Label(self, text="\n\n\n\n\n\n\n\n\n\n", relief="sunken", anchor=tk.CENTER,
+                                   background="#504040")
 
         # insert scorecard
         ## load images
@@ -244,6 +230,5 @@ class ViewMain(ttk.Frame):
         self.controller = controller
 
     def quit(self):
-        #todo Abfrage hinzufügen
+        # todo Abfrage hinzufügen
         self.master.destroy()
-

@@ -1,9 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
+import pywinstyles
 from functools import partial
 from math import sqrt, pi, exp
 
-from globals import LEFT_MOUSE_BUTTON, BOLD_FONT
+from PIL import Image
+
+from globals import LEFT_MOUSE_BUTTON, BOLD_FONT, CARD_SIZE
 
 path_to_switch = "Resources/ToggleSwitch.gif"
 path_to_scale = "Resources/Difficulty.gif"
@@ -191,12 +194,16 @@ class ControllerStart:
 
 class ControllerMain:
     def __init__(self, model, view):
+        self.active_card_image = None
         self.model = model
         self.view = view
         self.starting_drag_position = (0, 0)
         self.drag_data = {"x": 0, "y": 0, "item": 0}
         self.view.master.bind("<Escape>", self.quit)
         self.number_of_decks = len(self.model.list_base_games)
+        self.image_approve = tk.PhotoImage(file="Resources/Approve.png", format="png")
+        self.image_decline = tk.PhotoImage(file="Resources/Decline.png", format="png")
+        self.image_turn = tk.PhotoImage(file="Resources/Turn.png", format="png")
 
         # show scoring cards
         if self.number_of_decks != 3:
@@ -206,21 +213,28 @@ class ControllerMain:
                 self.scoring_card.grid(column=13, row=4 * i + 1, columnspan=2, rowspan=4)
                 ttk.Label(self.view, text="0", font=BOLD_FONT).grid(column=15, row=4 * i + 1, columnspan=2, rowspan=4)
         else:
-            # Ulimopolis = 4 goals
+            # Ultimopolis = 4 goals
             for i, scoring_card in enumerate(self.model.score_cards):
                 self.scoring_card = ttk.Label(self.view, image=scoring_card.back_image)
                 self.scoring_card.grid(column=13, row=3 * i + 1, columnspan=2, rowspan=3)
                 ttk.Label(self.view, text="0", font=BOLD_FONT).grid(column=15, row=3 * i + 1, columnspan=2, rowspan=3)
 
         # show initial hand cards
+        self.hand_cards = []
         if self.number_of_decks != 2:
             # standard case = 3 cards
             self.first_card = ttk.Label(self.view, image=self.model.hand_cards[0].front_image)
             self.first_card.grid(column=1, row=17, rowspan=2, columnspan=2)
+            self.first_card.bind(LEFT_MOUSE_BUTTON, self.play_card)
+            self.hand_cards.append(self.first_card)
             self.second_card = ttk.Label(self.view, image=self.model.hand_cards[1].front_image)
             self.second_card.grid(column=3, row=17, rowspan=2, columnspan=2)
+            self.second_card.bind(LEFT_MOUSE_BUTTON, self.play_card)
+            self.hand_cards.append(self.second_card)
             self.third_card = ttk.Label(self.view, image=self.model.hand_cards[2].front_image)
             self.third_card.grid(column=5, row=17, rowspan=2, columnspan=2)
+            self.third_card.bind(LEFT_MOUSE_BUTTON, self.play_card)
+            self.hand_cards.append(self.third_card)
         else:
             # Combopolis = 2 cards
             self.first_card = ttk.Label(self.view, image=self.model.hand_cards[0].front_image)
@@ -231,32 +245,48 @@ class ControllerMain:
         # show decks
         match self.number_of_decks:
             case 1:
+                # add indicator for decks
+                self.view.deck_area.grid(column=7, row=17, columnspan=6, rowspan=2)
+                self.view.deck_area.config(width=40)
                 game = list(self.model.dict_of_decks.keys())[0]
                 self.next_card = self.model.dict_of_decks[game].deal()
-                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image, background="#000001")
                 self.next_card_image.grid(column=7, row=17, rowspan=2, columnspan=6)
+                pywinstyles.set_opacity(self.next_card_image, color="#000001")
+
             case 2:
-                # todo show cards from the matching deck
+                # add indicator for decks
+                self.view.deck_area.grid(column=7, row=17, columnspan=6, rowspan=2)
+                self.view.deck_area.config(width=100)
+                # todo show cards from the matching deck (for loop)
                 game = list(self.model.dict_of_decks.keys())[0]
                 self.next_card = self.model.dict_of_decks[game].deal()
-                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image, background="#000001")
                 self.next_card_image.grid(column=7, row=17, rowspan=2, columnspan=3)
-                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                pywinstyles.set_opacity(self.next_card_image, color="#000001")
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image, background="#000001")
                 self.next_card_image.grid(column=10, row=17, rowspan=2, columnspan=3)
+                pywinstyles.set_opacity(self.next_card_image, color="#000001")
             case 3:
+                # add indicator for decks
+                self.view.deck_area.grid(column=7, row=17, columnspan=6, rowspan=2)
+                self.view.deck_area.config(width=120)
                 # todo show cards from the matching deck
                 game = list(self.model.dict_of_decks.keys())[0]
                 self.next_card = self.model.dict_of_decks[game].deal()
-                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image, background="#000001")
                 self.next_card_image.grid(column=7, row=17, rowspan=2, columnspan=2)
-                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                pywinstyles.set_opacity(self.next_card_image, color="#000001")
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image, background="#000001")
                 self.next_card_image.grid(column=9, row=17, rowspan=2, columnspan=2)
-                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image)
+                pywinstyles.set_opacity(self.next_card_image, color="#000001")
+                self.next_card_image = ttk.Label(self.view, image=self.next_card.front_image, background="#000001")
                 self.next_card_image.grid(column=11, row=17, rowspan=2, columnspan=2)
+                pywinstyles.set_opacity(self.next_card_image, color="#000001")
 
         # add first card to canvas
         self.temp_card = self.model.dict_of_decks["Sprawlopolis"].deal()
-        self.view.play_area.create_image(3000, 1400, image=self.temp_card.front_image)
+        self.view.play_area.create_image(3000, 1323, image=self.temp_card.front_image)
 
         # add bindings to drag canvas
         self.view.play_area.bind("<ButtonPress-2>", self.pick_up_canvas)
@@ -286,15 +316,16 @@ class ControllerMain:
         self.drag_data["x"], self.drag_data["y"] = (event.x, event.y)
 
     def pick_up_card(self, event):
-        self.drag_data["item"] = self.view.play_area.find_closest(event.x, event.y)[0]
-        self.drag_data["x"] = event.x
-        self.drag_data["y"] = event.y
+        x = self.view.play_area.canvasx(event.x)
+        y = self.view.play_area.canvasy(event.y)
+        self.drag_data["item"] = self.view.play_area.find_closest(x, y)[0]
+        self.drag_data["x"] = x
+        self.drag_data["y"] = y
+        self.show_buttons(False)
 
     def drop_card(self, event):
         grid_x_pix = self.view.play_area.canvasx(event.x, 100)
-        grid_x_pix = max(grid_x_pix, 100)
         grid_y_pix = self.view.play_area.canvasy(event.y, 73.5)
-        grid_y_pix = max(grid_y_pix, 73.5)
         self.view.play_area.coords(self.drag_data["item"], grid_x_pix, grid_y_pix)
         # grid_x_int = grid_x_pix // 100
         # grid_y_int = grid_y_pix // 73.5
@@ -302,15 +333,34 @@ class ControllerMain:
         self.drag_data["item"] = 0
         self.drag_data["x"] = 0
         self.drag_data["y"] = 0
+        self.show_buttons(True, grid_x_pix, grid_y_pix)
 
     def drag_card(self, event):
-        delta_x = event.x - self.drag_data["x"]
-        delta_y = event.y - self.drag_data["y"]
+        x = self.view.play_area.canvasx(event.x)
+        y = self.view.play_area.canvasy(event.y)
+        delta_x = x - self.drag_data["x"]
+        delta_y = y - self.drag_data["y"]
         self.view.play_area.move(self.drag_data["item"], delta_x, delta_y)
-        self.drag_data["x"] = event.x
-        self.drag_data["y"] = event.y
+        self.drag_data["x"] = x
+        self.drag_data["y"] = y
+
+    def play_card(self, event):
+        self.active_card_image = event.widget.cget("image")[0]
+        pywinstyles.set_opacity(event.widget, value=0.5)
+        self.view.play_area.create_image(3000, 1323, image=self.active_card_image, tag="movable")
+        for card in self.hand_cards:
+            card.unbind(LEFT_MOUSE_BUTTON)
 
     def quit(self, _):
         # TODO ask if intentional (Are you sure?)
         self.view.master.destroy()
 
+    def show_buttons(self, param, grid_x_pix=0, grid_y_pix=0):
+        if param:
+            # print(grid_x_pix, grid_y_pix)
+            self.view.play_area.create_image(grid_x_pix - CARD_SIZE[0] / 2, grid_y_pix - CARD_SIZE[1] / 2,
+                                             image=self.image_approve, tag="canvas_buttons")
+            self.view.play_area.create_image(grid_x_pix - CARD_SIZE[0] / 2, grid_y_pix,
+                                             image=self.image_turn, tag="canvas_buttons")
+            self.view.play_area.create_image(grid_x_pix - CARD_SIZE[0] / 2, grid_y_pix + CARD_SIZE[1] / 2,
+                                             image=self.image_decline, tag="canvas_buttons")
