@@ -47,8 +47,13 @@ class StartApp(App):
 
 class MainApp(App):
     def __init__(self, list_base_games, list_expansions, difficulty):
-        super().__init__(1, 1, 0)
+        super().__init__(1E6, 1E6, 0)
         self.attributes("-fullscreen", True)
+
+        # set up loading screen
+        self.withdraw()
+        loading = Loading(self)
+
         # set up model
         model_main = ModelMain(list_base_games, list_expansions, difficulty)
 
@@ -60,6 +65,15 @@ class MainApp(App):
         controller_main = ControllerMain(model_main, view_main)
         view_main.set_controller(controller_main)
 
+        # close loading screen
+        loading.destroy()
+        self.deiconify()
+
+class Loading(tk.Toplevel):
+    def __init__(self, parent):
+        tk.Toplevel.__init__(self, parent)
+        self.title("Loading")
+        self.update()
 
 if __name__ == "__main__":
     app_start = StartApp()
