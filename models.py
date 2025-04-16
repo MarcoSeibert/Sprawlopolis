@@ -1,6 +1,5 @@
 import random
 from tkinter import PhotoImage
-
 from PIL import Image, ImageDraw, ImageTk
 from pypdf import PdfReader
 
@@ -119,12 +118,15 @@ class Card:
         else:
             self.back_image = image
 
+
 class Boardstate:
     def __init__(self):
         pass
 
     def add_card_to_board(self, card):
-        print(self, card)
+        pass
+        # print(self, card)
+
 
 class ModelMain:
     def __init__(self, list_base_games, list_expansions, difficulty):

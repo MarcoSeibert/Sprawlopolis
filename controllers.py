@@ -1,19 +1,21 @@
+import random
 import tkinter as tk
 from tkinter import ttk
 import pywinstyles
 from functools import partial
 from math import sqrt, pi, exp
-
-from PIL import Image
+from PIL import Image, ImageTk
 
 from globals import LEFT_MOUSE_BUTTON, BOLD_FONT, CARD_SIZE
 
 path_to_switch = "Resources/ToggleSwitch.gif"
 path_to_scale = "Resources/Difficulty.gif"
+switch_delay = [20, 3, 100]
+scale_delay = [35, 2, 125]
 
 
-def smooth(x: int, m: float, a: float) -> int:
-    return int(a - (1 / (sqrt(2 * pi) * 3) * exp(-((x - m) ** 2) / (2 * 3 ** 2)) * 75 + 18))
+def smooth(x: int, m: float, l: float, s: float, a: float) -> int:
+    return int(l - a / (s * sqrt(2 * pi)) * exp(-0.5 * ((x - m) / s) ** 2))
 
 
 def animate(i: int, widget: tk.Label, frames: list[tk.PhotoImage], m: float, a: float):
@@ -23,7 +25,7 @@ def animate(i: int, widget: tk.Label, frames: list[tk.PhotoImage], m: float, a: 
     if i == len(frames):
         widget.image = frame
         return
-    widget.after(smooth(i, m, a), animate, i, widget, frames, m, a)
+    widget.after(10, animate, i, widget, frames, m, a)
 
 
 class ControllerStart:
@@ -42,11 +44,11 @@ class ControllerStart:
             self.view.button_play["state"] = tk.DISABLED
             self.view.button_play.unbind(LEFT_MOUSE_BUTTON)
             list_expansions = self.model.list_expansions
-            frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
+            frames_switch = get_frames_from_gif(path_to_switch)
             frames_switch.reverse()
             for exp_id, switch in self.map_index_to_exp.items():
                 if exp_id in list_expansions:
-                    animate(0, switch, frames_switch, 6.5, 30)
+                    play_gif(self.view, switch, frames_switch, False, switch_delay)
                     switch.active = False
             self.view.label_exp1["text"] = ""
             self.view.label_exp2["text"] = ""
@@ -78,11 +80,11 @@ class ControllerStart:
             self.view.button_play.bind(LEFT_MOUSE_BUTTON, partial(self.view.on_play))
             # Disable expansions when using multiple base games
             list_expansions = self.model.list_expansions
-            frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
+            frames_switch = get_frames_from_gif(path_to_switch)
             frames_switch.reverse()
             for exp_id, switch in self.map_index_to_exp.items():
                 if exp_id in list_expansions:
-                    animate(0, switch, frames_switch, 6.5, 30)
+                    play_gif(self.view, switch, frames_switch, False, switch_delay)
                     switch.active = False
             self.view.label_exp1["text"] = ""
             self.view.label_exp2["text"] = ""
@@ -141,14 +143,14 @@ class ControllerStart:
                     self.view.switch_exp5["state"] = tk.DISABLED
 
         # Update base game toggles
-        frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
+        frames_switch = get_frames_from_gif(path_to_switch)
         for base_id, switch in self.map_index_to_base.items():
             if base_id in list_of_base_games and not switch.active:
-                animate(0, switch, frames_switch, 6.5, 30)
+                play_gif(self.view, switch, frames_switch, False, switch_delay)
                 switch.active = True
             elif base_id not in list_of_base_games and switch.active:
                 frames_switch.reverse()
-                animate(0, switch, frames_switch, 6.5, 30)
+                play_gif(self.view, switch, frames_switch, False, switch_delay)
                 switch.active = False
 
     def click_exp(self, exp_id: int):
@@ -156,14 +158,14 @@ class ControllerStart:
         if len(list_expansions) > 1:
             self.view.label_note["text"] = "Better only one exp"
         # Update the expansion toggles
-        frames_switch = [tk.PhotoImage(file=path_to_switch, format=f"gif -index {i}") for i in range(13)]
+        frames_switch = get_frames_from_gif(path_to_switch)
         for exp_id, switch in self.map_index_to_exp.items():
             if exp_id in list_expansions and not switch.active:
-                animate(0, switch, frames_switch, 6.5, 30)
+                play_gif(self.view, switch, frames_switch, False, switch_delay)
                 switch.active = True
             elif exp_id not in list_expansions and switch.active:
                 frames_switch.reverse()
-                animate(0, switch, frames_switch, 6.5, 30)
+                play_gif(self.view, switch, frames_switch, False, switch_delay)
                 switch.active = False
 
     def click_diff(self, event: tk.Event):
@@ -173,19 +175,20 @@ class ControllerStart:
         match scale.value:
             case 0:
                 scale.value = 1
-                frames_scale = [tk.PhotoImage(file=path_to_scale, format=f"gif -index {i}") for i in range(13, 6, -1)]
+                frames_scale = get_frames_from_gif("Resources/Difficulty01.gif")
+                frames_scale.reverse()
             case 1:
                 if y_click >= 96:
                     scale.value = 2
-                    frames_scale = [tk.PhotoImage(file=path_to_scale, format=f"gif -index {i}") for i in
-                                    range(6, -1, -1)]
+                    frames_scale = get_frames_from_gif("Resources/Difficulty12.gif")
+                    frames_scale.reverse()
                 else:
                     scale.value = 0
-                    frames_scale = [tk.PhotoImage(file=path_to_scale, format=f"gif -index {i}") for i in range(8, 15)]
+                    frames_scale = get_frames_from_gif("Resources/Difficulty01.gif")
             case 2:
                 scale.value = 1
-                frames_scale = [tk.PhotoImage(file=path_to_scale, format=f"gif -index {i}") for i in range(1, 8)]
-        animate(0, scale, frames_scale, 4, 37)
+                frames_scale = get_frames_from_gif("Resources/Difficulty12.gif")
+        play_gif(self.view, scale, frames_scale, False, scale_delay)
         self.model.difficulty = scale.value
 
     def click_play(self):
@@ -366,3 +369,103 @@ class ControllerMain:
                                              image=self.image_decline, tags=("canvas_buttons", "decline"))
         else:
             self.view.play_area.delete("canvas_buttons")
+
+
+class ControllerLoading:
+    def __init__(self, view):
+        self.view = view
+
+    def play_animation(self, list_base_games):
+        view = self.view
+        label = self.view.label_image
+        frames = get_frames_from_gif("Resources/Loading.gif")
+        play_gif(view, label, frames, True, False)
+        show_text(view, list_base_games)
+
+
+def get_frames_from_gif(img):
+    with Image.open(img) as gif:
+        index = 0
+        frames = []
+        while True:
+            try:
+                gif.seek(index)
+                frame = ImageTk.PhotoImage(gif)
+                frames.append(frame)
+            except EOFError:
+                break
+            index += 1
+        return frames
+
+
+def display_next_frame(view, frame, label, frames, loop, variable_delay, restart=False):
+    if restart:
+        try:
+            label.config
+        except tk.TclError:
+            return
+        # start over after restart
+        play_gif(view, label, frames, loop, variable_delay)
+        return
+    try:
+        label.config(image=frame)
+    except tk.TclError:
+        return
+
+
+def play_gif(view, label, frames, loop, variable_delay):
+    frame = None
+    label.image = None
+    # delay for scheduling later frames
+    total_delay = 0
+    # delay between frames
+    delay_frames = 40
+    # scheduling event for every frame
+    for i, frame in enumerate(frames):
+        if variable_delay:
+            m = (len(frames) - 1) / 2
+            l = variable_delay[0]
+            s = variable_delay[1]
+            a = variable_delay[2]
+            delay_frames = smooth(i, m, l, s, a)
+        view.after(total_delay, display_next_frame, view, frame, label, frames, loop, variable_delay)
+        total_delay += delay_frames
+    # schedule restart after all frames are done
+    if loop:
+        view.after(total_delay, display_next_frame, view, frame, label, frames, loop, variable_delay, True)
+    else:
+        label.image = frame
+        label.config(image=label.image)
+
+
+def show_text(view, list_base_games):
+    label = view.label_text
+    text_blocks = []
+    text_blocks_sprawl = ["Loading urban sprawl...", "Constructing infrastructure...", "Writing city blueprints...",
+                          "Preparing construction crews...", "Analyzing zoning laws...",
+                          "Reading city council approvals...", "Prepping for urban challenges..."]
+    text_blocks_agro = ["Cultivating farmland...", "Preparing the harvest...", "Planning rural landscape...",
+                        "Loading livestock data...", "Laying out orchards...", "Setting up trellises...",
+                        "Adapting for agricultural challenges..."]
+    text_blocks_naturo = ["Charting waterways...", "Setting up riverside campsites...", "Planning forest preserves...",
+                          "Loading mountain climbing routes...", "Packing for meadow picnics...",
+                          "Lake reflections loading...", "Constructing lakeside cabins..."]
+    if 0 in list_base_games:
+        text_blocks.extend(text_blocks_sprawl)
+    if 1 in list_base_games:
+        text_blocks.extend(text_blocks_agro)
+    if 2 in list_base_games:
+        text_blocks.extend(text_blocks_naturo)
+    random.shuffle(text_blocks)
+    # delay for scheduling later texts
+    total_delay = 0
+    # delay between texts
+    delay_frames = 750
+    # scheduling event for every texts
+    for text in text_blocks:
+        view.after(total_delay, change_text, label, text)
+        total_delay += delay_frames
+
+
+def change_text(label, text):
+    label.config(text=text)

@@ -2,9 +2,7 @@ import tkinter as tk
 from functools import partial
 from tkinter import ttk
 from tkinter.constants import HORIZONTAL, VERTICAL
-
 from PIL import ImageTk, Image, ImageDraw
-from pypdf import PdfReader
 
 from globals import TITLE_FONT, BOLD_FONT, BASIC_FONT, LEFT_MOUSE_BUTTON
 
@@ -232,3 +230,13 @@ class ViewMain(ttk.Frame):
     def quit(self):
         # todo Abfrage hinzufügen
         self.master.destroy()
+
+
+class ViewLoading(tk.Frame):
+    def __init__(self, parent: tk.Tk):
+        super().__init__(parent, background="white")
+        ttk.Label(self, text="Loading", font=BOLD_FONT, background="white").grid(column=0, row=0)
+        self.label_image = ttk.Label(self, background="white")
+        self.label_image.grid(column=0, row=1)
+        self.label_text = ttk.Label(self, font=BASIC_FONT, background="white")
+        self.label_text.grid(column=0, row=2)

@@ -1,7 +1,9 @@
-from controllers import ControllerStart, ControllerMain
-from models import ModelStart, ModelMain
-from views import ViewStart, ViewMain
 import tkinter as tk
+import threading
+
+from controllers import ControllerStart, ControllerMain, ControllerLoading
+from models import ModelStart, ModelMain
+from views import ViewStart, ViewMain, ViewLoading
 
 
 class App(tk.Tk):
@@ -26,7 +28,6 @@ class App(tk.Tk):
 class StartApp(App):
     def __init__(self):
         super().__init__(2, 2)
-
         # set up model
         model_start = ModelStart()
 
@@ -49,11 +50,16 @@ class MainApp(App):
     def __init__(self, list_base_games, list_expansions, difficulty):
         super().__init__(1E6, 1E6, 0)
         self.attributes("-fullscreen", True)
-
         # set up loading screen
         self.withdraw()
-        loading = Loading(self)
 
+        loading = Loading(self)
+        process_thread = threading.Thread(target=self.start_up,
+                                          args=[list_base_games, list_expansions, difficulty, loading])
+        process_thread.start()
+        loading.controller.play_animation(list_base_games)
+
+    def start_up(self, list_base_games, list_expansions, difficulty, loading):
         # set up model
         model_main = ModelMain(list_base_games, list_expansions, difficulty)
 
@@ -69,11 +75,25 @@ class MainApp(App):
         loading.destroy()
         self.deiconify()
 
+
 class Loading(tk.Toplevel):
     def __init__(self, parent):
-        tk.Toplevel.__init__(self, parent)
+        tk.Toplevel.__init__(self, parent, bg="white", highlightthickness=0, border=0, borderwidth=0)
         self.title("Loading")
+        self.iconbitmap("Resources/Icon.ico")
+        window_width = 500
+        window_height = 250
+        offset_x = (self.winfo_screenwidth() - window_width) // 2
+        offset_y = (self.winfo_screenheight() - window_height) // 2
+        self.geometry(f"{window_width}x{window_height}+{offset_x}+{offset_y}")
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.focus_force()
         self.update()
+        self.view = ViewLoading(self)
+        self.view.grid(row=0, column=0)
+        self.controller = ControllerLoading(self.view)
+
 
 if __name__ == "__main__":
     app_start = StartApp()
