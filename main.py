@@ -1,5 +1,6 @@
 import tkinter as tk
 import threading
+from tkinter import Toplevel
 
 from controllers import ControllerStart, ControllerMain, ControllerLoading
 from models import ModelStart, ModelMain
@@ -7,7 +8,7 @@ from views import ViewStart, ViewMain, ViewLoading
 
 
 class App(tk.Tk):
-    def __init__(self, factor_x: float, factor_y: float, offset_factor_y=1):
+    def __init__(self, factor_x: float, factor_y: float, offset_factor_y: float = 1):
         super().__init__()
 
         # get some measurements
@@ -39,15 +40,15 @@ class StartApp(App):
         controller_start = ControllerStart(model_start, view_start)
         view_start.set_controller(controller_start)
 
-    def start_game(self, list_base_games, list_expansions, difficulty):
+    def start_game(self, list_base_games: list[str], list_expansions: list[str], difficulty: int, combo: str):
         self.destroy()
-        app_game = MainApp(list_base_games, list_expansions, difficulty)
+        app_game = MainApp(list_base_games, list_expansions, difficulty, combo)
         app_game.focus_force()
         app_game.mainloop()
 
 
 class MainApp(App):
-    def __init__(self, list_base_games, list_expansions, difficulty):
+    def __init__(self, list_base_games: list[str], list_expansions: list[str], difficulty: int, combo: str):
         super().__init__(1E6, 1E6, 0)
         self.attributes("-fullscreen", True)
         # set up loading screen
@@ -55,13 +56,13 @@ class MainApp(App):
 
         loading = Loading(self)
         process_thread = threading.Thread(target=self.start_up,
-                                          args=[list_base_games, list_expansions, difficulty, loading])
+                                          args=[list_base_games, list_expansions, difficulty, combo, loading])
         process_thread.start()
         loading.controller.play_animation(list_base_games)
 
-    def start_up(self, list_base_games, list_expansions, difficulty, loading):
+    def start_up(self, list_base_games: list[str], list_expansions: list[str], difficulty: int, combo: str, loading: Toplevel):
         # set up model
-        model_main = ModelMain(list_base_games, list_expansions, difficulty)
+        model_main = ModelMain(list_base_games, list_expansions, difficulty, combo)
 
         # set up view
         view_main = ViewMain(self)
@@ -77,7 +78,7 @@ class MainApp(App):
 
 
 class Loading(tk.Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent:App):
         tk.Toplevel.__init__(self, parent, bg="white", highlightthickness=0, border=0, borderwidth=0)
         self.title("Loading")
         self.iconbitmap("Resources/Icon.ico")

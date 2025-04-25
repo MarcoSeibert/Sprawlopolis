@@ -1,9 +1,11 @@
 import tkinter as tk
 from functools import partial
-from tkinter import ttk
+from tkinter import ttk, PhotoImage
 from tkinter.constants import HORIZONTAL, VERTICAL
 from PIL import ImageTk, Image, ImageDraw
+from PIL.ImageFile import ImageFile
 
+from controllers import ControllerMain, ControllerStart
 from globals import TITLE_FONT, BOLD_FONT, BASIC_FONT, LEFT_MOUSE_BUTTON
 
 
@@ -22,7 +24,7 @@ class ViewStart(ttk.Frame):
         # set default parameters
         self.switch_off = tk.PhotoImage(file="Resources/ToggleSwitch.gif", format="gif -index 0")
         self.switch_on = tk.PhotoImage(file="Resources/ToggleSwitch.gif", format="gif -index 12")
-        self.switch_normal = tk.PhotoImage(file="Resources/Difficulty.gif", format="gif -index 7")
+        self.switch_normal = tk.PhotoImage(file="Resources/Difficulty01.gif", format="gif -index 0")
 
         # creating frame
         self.columnconfigure(0, weight=1)
@@ -107,7 +109,7 @@ class ViewStart(ttk.Frame):
         self.button_quit.grid(column=0, row=8, columnspan=2)
         self.button_quit.bind("<Return>", partial(self.on_quit))
 
-    def set_controller(self, controller):
+    def set_controller(self, controller: ControllerStart):
         self.controller = controller
 
     def on_quit(self, *args):
@@ -135,7 +137,7 @@ class ViewStart(ttk.Frame):
             self.controller.click_diff(event)
 
 
-def add_corners_and_border(first_image, card_size):
+def add_corners_and_border(first_image: ImageFile, card_size: tuple[int]):
     width, height = first_image.size
     radius = max(card_size) // 4
     border_width = radius // 2
@@ -187,8 +189,16 @@ class ViewMain(ttk.Frame):
         self.play_area.config(xscrollcommand=self.hbar.set, yscrollcommand=self.vbar.set)
 
         # add area for decks
-        self.deck_area = ttk.Label(self, text="\n\n\n\n\n\n\n\n\n\n", relief="sunken", anchor=tk.CENTER,
-                                   background="#504040")
+        self.deck_area = tk.LabelFrame(self, text="Decks", foreground="black", font=BASIC_FONT, relief="flat")
+        self.deck_area.grid(column=7, row=17, columnspan=6, rowspan=2)
+
+        # add area for hand cards
+        self.hand_area = tk.LabelFrame(self, text="Hand", foreground="black", font=BASIC_FONT, relief="flat")
+        self.hand_area.grid(column=1, columnspan=6, row=17, rowspan=2)
+
+        # add area for score cards
+        self.score_area = tk.LabelFrame(self, foreground="black", font=BASIC_FONT, relief="flat")
+        self.score_area.grid(column=13, columnspan=2, row=1, rowspan=12)
 
         # insert scorecard
         ## load images
@@ -224,7 +234,7 @@ class ViewMain(ttk.Frame):
         self.total_score = ttk.Label(self, text="0", font=BOLD_FONT)
         self.total_score.grid(column=15, row=18, sticky="w")
 
-    def set_controller(self, controller):
+    def set_controller(self, controller: ControllerMain):
         self.controller = controller
 
     def quit(self):
